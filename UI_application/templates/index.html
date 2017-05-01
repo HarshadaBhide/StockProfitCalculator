@@ -1,0 +1,100 @@
+<!Doctype html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<style>
+form
+{
+    float:left;
+    padding-left: 10%;
+}
+#resultVals
+{
+    display: none;
+}
+</style>
+</head>
+<body bgcolor="#E6E6FA">
+<h2 style="text-align:center"> Stock Profit Calculator </h2>
+<form   id="inputVals">
+    <fieldset>
+        <legend>Please provide following information : </legend><br>
+        <b>Ticker symbol : </b><input id="symbol" name ="symbol" type="text" size="30" placeholder="Enter stock symbol" autocomplete="off"><br><br>
+        <b>Allotment  : </b><input id="allotment" name = "allotment" type="number" placeholder="Enter number of shares" autocomplete="off"><br><br>
+        <b>Final share price (in dollars)  : </b><input id="finalPrice" name = "finalPrice" type="number" placeholder="Final share price ($)" autocomplete="off"><br><br>
+        <b>Sell commission (in dollars)  : </b><input id="sellCom" name = "sellCom" type="number" placeholder="Sell commission ($)" autocomplete="off"><br><br>
+        <b>Inital share price (in dollars)  : </b><input id="initialPrice" name = "initialPrice" type="number" placeholder="Inital share price ($)" autocomplete="off"><br><br>
+        <b>Buy commission (in dollars)  : </b><input id="buyCom" name = "buyCom" type="number" placeholder="Buy commission ($)" autocomplete="off"><br><br>
+        <b>Captial gain tax rate (in %)  : </b><input id="gainPerc" name = "gainPerc" type="number" placeholder="Captial gain tax rate (%)" autocomplete="off"><br><br>
+        <br><input id="submit" type="button" name="submit" value="Get Profit Report">
+    </fieldset>
+</form>
+
+<form id="resultVals">
+    <fieldset>
+        <legend>Profit Report : </legend><br>
+        <output name="proceeds" id="proceeds" ></output><br><br>
+        <output name="cost" id="cost" ></output><br><br>
+        <output name="netProf" id="netProf" ></output><br><br>
+        <output name="retInv" id="retInv" ></output><br><br>
+        <output name="brkEvn" id="brkEvn" ></output><br>
+    </fieldset>
+</form>
+
+<script>
+
+    $(document).ready(function(){    
+        
+        // click on button submit
+        $("#submit").on('click', function(){
+			var inputdata = getpayloaddata();			
+			console.log(inputdata);
+            
+            $.ajax({
+                url: '/result', // url where to submit the request
+                type : "post", // type of action post || get
+				contentType:'application/json',
+                datatype : 'json', // data type
+                data : inputdata, // post data || get data
+                success : function(result) {
+                    // you can see the result from the console
+                    // tab of the developer tools
+                    console.log(result);
+                    showoutput(result);
+                },
+                error: function(xhr, resp, text) {
+                    console.log(xhr, resp, text);
+                }
+            })                    
+        });
+		
+		function getpayloaddata()
+		{		
+			var locObject = new Object();
+			locObject.symbol = $('#symbol').val();
+			locObject.allotment = $('#allotment').val();
+			locObject.finalPrice = $('#finalPrice').val();
+			locObject.sellCom = $('#sellCom').val();
+			locObject.initialPrice = $('#initialPrice').val();
+			locObject.buyCom = $('#buyCom').val();
+            locObject.gainPerc = $('#gainPerc').val();
+			
+			var jsonstring = JSON.stringify(locObject);
+			return jsonstring;			
+		}
+        
+        function showoutput(result)
+		{
+            $("#resultVals").show(); 
+            var objOutput = $.parseJSON(result);
+            $('#proceeds').val("Proceeds = $"+objOutput.proceeds);
+            $('#cost').val("Cost = $"+objOutput.cost);
+            $('#netProf').val("Net Profit = $"+objOutput.netProfit);
+            $('#retInv').val("Return on investment = "+objOutput.returnIn+"%");
+            $('#brkEvn').val("Break even price = $"+objOutput.brkEvn);
+		}
+    });
+</script> 
+
+</body>
+</html>
