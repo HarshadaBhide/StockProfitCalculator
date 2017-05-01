@@ -1,0 +1,104 @@
+<!Doctype html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<style>
+form
+{
+    float:left;
+    padding-left: 10%;
+}
+#resultVals
+{
+    display: none;
+}
+</style>
+</head>
+<body bgcolor="#E6E6FA">
+<h2 style="text-align:center"> Stock Application </h2>
+<form   id="inputVals">
+    <fieldset>
+        <legend>Please enter symbol : </legend><br>
+        <b>Ticker symbol : </b><input id="symbol" name ="symbol" type="text" size="30" placeholder="Enter stock symbol" autocomplete="off"><br><br>
+        <br><input id="submit" type="button" name="submit" value="Get Latest Stock Report">
+    </fieldset>
+</form>
+
+<form id="resultVals">
+    <fieldset>
+        <legend>Stock Report : </legend><br>
+        <output name="dateTm" id="dateTm" ></output><br><br>
+        <output name="company" id="company" ></output><br><br>
+        <output name="stockInfo" id="stockInfo" ></output><br><br>
+    </fieldset>
+</form>
+
+<script>
+
+    $(document).ready(function(){    
+        
+        // click on button submit
+        $("#submit").on('click', function(){
+			var inputdata = getpayloaddata();			
+			console.log(inputdata);
+            
+            $.ajax({
+                url: '/result', // url where to submit the request
+                type : "post", // type of action post || get
+				contentType:'application/json',
+                datatype : 'json', // data type
+                data : inputdata, // post data || get data
+                success : function(result) {
+                    // you can see the result from the console
+                    // tab of the developer tools
+                    console.log(result);
+                    showoutput(result);
+                },
+                error: function(xhr, resp, text) {
+                    console.log(xhr, resp, text);
+                }
+            })                    
+        });
+		
+		function getpayloaddata()
+		{		
+			var locObject = new Object();
+			locObject.symbol = $('#symbol').val();
+			var jsonstring = JSON.stringify(locObject);
+			return jsonstring;			
+		}
+        
+        function showoutput(result)
+		{
+            $("#resultVals").show(); 
+            var objOutput = $.parseJSON(result);
+            if( objOutput.errMsg === "InvalidSymbol")
+            {
+                $('#dateTm').val("  InvalidSymbol Error   ");
+                $('#company').val("The Ticker symbol is invalid. ");
+                $('#stockInfo').val("Please enter a valid symbol.");
+            }
+            else if( objOutput.errMsg === "NetworkError")
+            {
+                $('#dateTm').val("  NetworkError Error   ");
+                $('#company').val("There is a connection error. ");
+                $('#stockInfo').val("Please check your network connectivity.");
+            }
+            else if( objOutput.errMsg === "SystemError")
+            {
+                $('#dateTm').val("  SystemError Error   ");
+                $('#company').val("There is a system error. ");
+                $('#stockInfo').val("Please try another Tocker symbol or try after some time.");
+            }
+            else
+            {
+                $('#dateTm').val("Date & Time = "+objOutput.time);
+                $('#company').val("Company = "+objOutput.company);
+                $('#stockInfo').val("Stock Info = "+objOutput.stockInfo);
+            }
+		}
+    });
+</script> 
+
+</body>
+</html>
